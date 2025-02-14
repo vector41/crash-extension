@@ -1,0 +1,44 @@
+{
+    "manifest_version": 3,
+    "name": "BC.GAME Analyzer",
+    "version": "1.1",
+    "description": "Automatically logs the first table row from BC.Game Crash page in real-time.",
+    "permissions": [
+        "scripting",
+        "tabs",
+        "storage",
+        "notifications"
+    ],
+    "host_permissions": [
+        "https://bc.game/game/crash/*"
+    ],
+    "background": {
+        "service_worker": "background.js"
+    },
+    "content_scripts": [
+        {
+            "matches": [
+                "https://*/*",
+                "https://bc.game/game/crash/*"
+            ],
+            "js": [
+                "content.js",
+                "lib/jquery.js"
+            ]
+        }
+    ],
+    "action": {
+        "default_icon": "favicon.png"
+    },
+    "icons": {
+        "16": "favicon.png",
+        "48": "favicon.png",
+        "128": "favicon.png"
+    },
+    "content_security_policy": {
+        "script-src": [
+            "'self'"
+        ],
+        "object-src": "'self'"
+    }
+}

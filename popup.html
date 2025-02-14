@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>BC.GAME Analyzer</title>
+
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="description"
+        content="Useful blockchain games hash analyzer. You can use this analyzer for games like BC.Game, Bustabit, Ethercrash, etc..." />
+    <meta property="og:image:width" content="960" />
+    <meta property="og:image:height" content="585" />
+    <meta property="og:title" content="BC Graph" />
+    <meta property="og:site_name" content="BC Graph" />
+    <meta property="og:description"
+        content="Useful blockchain games hash analyzer developed. You can use this analyzer for games like BC.Game, Bustabit, Ethercrash, etc..." />
+    <!-- Schema.org markup for Google+ -->
+    <meta itemprop="name" content="BC Graph" />
+    <meta itemprop="description"
+        content="Useful blockchain games hash analyzer developed. You can use this analyzer for games like BC.Game, Bustabit, Ethercrash, etc..." />
+    <meta itemprop="image" content="img/bc-graph.png" />
+    <!-- Twitter Card data -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@alberteichberg" />
+    <meta name="twitter:title" content="BC Graph" />
+    <meta name="twitter:description"
+        content="Useful blockchain games hash analyzer developed. You can use this analyzer for games like BC.Game, Bustabit, Ethercrash, etc..." />
+    <meta name="twitter:image:src" content="img/bc-graph.png" />
+    <meta name="author" content="Albert Eichberg" />
+
+    <link rel="stylesheet" href="./index.css" />
+    <link rel="shortcut icon" href="logo.webp" type="image/x-icon">
+</head>
+
+<body>
+    <div class="app-container">
+        <div class="status-modal" id="selected_status_modal">
+            <div class="status-modal-container">
+                <span id="seleted_bust"></span>
+                <span id="seleted_index"></span>
+            </div>
+        </div>
+        <div class="danger-modal" id="danger_modal">
+            <span>Verifying a huge amount of games may consume more ressources from your CPU</span>
+        </div>
+        <div class="app-header">
+            <div class="setting-container">
+                <div class="input-container">
+                    <input type="text" id="game_hash_input" placeholder="Game's hash (SHA256)"
+                        value="fcbd34149bb5c22086061366f7635c1856d128b09b3a49dae30b46a1ad15d8a8" />
+                    <!-- <input type="text" id="game_salt_input" placeholder="Salt"
+                        value="0000000000000000000301e2801a9a9598bfb114e574a91a887f2132f33047e6" disabled /> -->
+                    <!-- <input class="input" type="text" id="game_salt_input" placeholder="Salt"
+                  value="000000000000000000030587dd9ded1fcc5d603652da58deb670319bd2e09445" /> -->
+                </div>
+                <div class="count-container">
+                    <input class="game-range-main" type="number" id="game_amount_input" min="50" max="100000" step="10"
+                        value="100" />
+                    <button class="btn-stable" id="chart_stable_100"> 100 </button>
+                    <!-- <button class="btn-stable" id="chart_stable_300"> 300 </button> -->
+                    <!-- <button class="btn-stable" id="chart_stable_500"> 500 </button> -->
+                    <button class="btn-stable" id="chart_stable_1000"> 1000 </button>
+                    <button class="btn-stable" id="chart_stable_2000"> 2000 </button>
+                    <button class="btn-verify" style="width: 90px;" id="game_verify_submit"> Verify </button>
+                </div>
+            </div>
+            <div class="dashboard-container">
+                <div><span id="game_current_combo">0</span></div>
+                <div style="display: flex; flex-direction: column; align-items: center; gap: 5px;">
+                    <div id="game_average" style="display: flex;"></div>
+                    <div style="height: 1px; background: #5d5d5d; width: 100%;"></div>
+                    <div id="game_range_status" style="display: flex;"></div>
+                </div>
+            </div>
+            <div class="alarm-container">
+                <div class="alarm-group" id="alarm_container"></div>
+                <div style="height: 1px; background: #5d5d5d; width: 100%;"></div>
+                <div class="prediction-group" id="prediction_container"></div>
+            </div>
+            <div class="alert-container">
+                <div class="alert-group bad" id="alert_container">
+                    <span id="alert_content"></span>
+                </div>
+            </div>
+        </div>
+        <br />
+        <div id="tabs-content">
+            <div>
+                <div class="dot-container">
+                    <div class="v-100 h-100" style="overflow: auto;">
+                        <div class="bust-list"></div>
+                    </div>
+                    <div class="v-100 h-100"
+                        style="overflow: auto; position: relative; display: flex; justify-content: flex-end;">
+                        <canvas id="arrayCanvas" width="2000" height="90px"></canvas>
+                        <div class="dot-chart" id="game_dot_chart" style="position: absolute; margin: 1px;"></div>
+                    </div>
+                </div>
+                <div class="main-chart">
+                    <div class="chart-title">
+                        Main range / <span id="game_main_analysis"></span>
+                        <span style="margin-left: 20px;">Thresold: </span><input class="game-range-custom" type="number" id="game_payout" min="1.01" max="10" step="0.5" value="2" />
+                    </div>
+                    <canvas id="chart_container_main" style="max-height: 100px; height: 100px;"></canvas>
+                </div>
+                <div class="range-chart">
+                    <div class="chart-title">
+                        Range <input class="game-range-custom" type="number" id="game_range1_amount" min="50" max="100000" step="10" value="300" />
+                        <span id="game_range1_analysis"></span>
+                    </div>
+                    <canvas id="chart_container_300" style="max-height: 80px; height: 80px;"></canvas>
+                </div>
+                <div class="range-chart">
+                    <div class="chart-title">
+                        Range
+                        <input class="game-range-custom" type="number" id="game_range2_amount" min="50" max="100000"
+                            step="10" value="500" /> <span id="game_range2_analysis"></span>
+                    </div>
+                    <canvas id="chart_container_500" style="max-height: 80px; height: 80px;"></canvas>
+                </div>
+                <div class="column is-one-fifth">
+                    <div class="analysis-setting">
+                        <h2 style="color: #c8c8c8">Range Analysis</h2>
+                        <div style="margin-left: 20px; margin-right: 50px;">
+                            <input class="game-range-main" type="text" id="game_analysis_range"
+                                value="1.5,2,3,8,9,10" style="width: 150px;" />
+                            <button class="btn-analysis" id="game_analysis_submit"> Analyze </button>
+                        </div>
+                        <h2 style="color: #c8c8c8">Payout Analysis</h2>
+                        <div style="margin-left: 20px;">
+                            <input class="game-range-main" type="number" id="game_analysis_payout"
+                                value="1000" style="width: 70px;" />
+                            <button class="btn-analysis" id="payout_analysis_submit"> Analyze </button>
+                        </div>
+                    </div>
+                    <div class="range-analysis"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="text/javascript" src="./lib/jquery.js"></script>
+    <script type="text/javascript" src="./lib/cryptojs.js"></script>
+    <script type="text/javascript" src="./lib/chart.js"></script>
+    <script src="./popup.js"></script>
+</body>
+
+</html>
