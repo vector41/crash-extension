@@ -139,12 +139,13 @@ function verify(gameHash, gameAmount) {
 
     showSequenceRed();
     drawChartMain();
+    showBustList();
     showDotChart();
-    shotBustList();
 
     analysisDashboard();
     analysisRangeMain();
     analysisAlarmPanel();
+    predictNextPayout();
 }
 
 function analysisRangeMain() {
@@ -202,61 +203,83 @@ function analysisRange2() {
 }
 
 function analysisDashboard() {
-    let latest10x = data.reverse().filter((v) => v.bust >= 10)[0];
+    const latest10x = data.reverse().filter((v) => v.bust >= 10)[0];
     $('#game_current_combo').text(latest10x.index - 1);
 
-    let $divAverage = $('#game_average');
+    const $divAverage = $('#game_average');
     $divAverage.empty();
-    let avg500Num = 500 / data2000.filter((v) => v.index <= 500 && v.bust >= 10).length;
-    let avg1000Num = 1000 / data2000.filter((v) => v.index <= 1000 && v.bust >= 10).length;
-    let avg2000Num = 2000 / data2000.filter((v) => v.index <= 2000 && v.bust >= 10).length;
 
-    let $divStep = $('#game_range_status');
-    $divStep.empty();
-    let analysisDeep = 0;
-    if (data2000.filter((v) => v.index <= 100 && v.bust >= 10).length <= 4) {
-        analysisDeep = data2000.filter((v) => v.index > 100 && v.index <= 250).filter((v) => v.bust >= 10).length > 0 ? data2000.filter((v) => v.index > 100 && v.index <= 250).filter((v) => v.bust >= 10).reverse()[0].index : 100;
-    } else {
-        analysisDeep = 100;
-    }
-    let $statusDeep = $('<div>').text(`${analysisDeep}`).attr('class', 'dashboard-item flag');
+    const count100 = data2000.filter((v) => v.index <= 100 && v.bust >= 10).length;
+    const count200 = data2000.filter((v) => v.index <= 200 && v.bust >= 10).length;
+    const count300 = data2000.filter((v) => v.index <= 300 && v.bust >= 10).length;
+    const count500 = data2000.filter((v) => v.index <= 500 && v.bust >= 10).length;
+    const count1000 = data2000.filter((v) => v.index <= 1000 && v.bust >= 10).length;
+    const count2000 = data2000.filter((v) => v.index <= 2000 && v.bust >= 10).length;
 
-    let $rangeBadge1 = $('<div>').attr('class', `dashboard-status ${verifyAlarmStatus(Math.round(100 / avg500Num))}`);
-    let $avg500 = $('<div>').attr('class', 'dashboard-item').text(`${avg500Num > 0 ? Math.round(100 / avg500Num) : 0}`);
-    $avg500.append($rangeBadge1);
+    let shortAvg = (count300 - count100) / 3 + count100 / 3;
+    let midAvg = ((count1000 - count300) / 7) * 2 / 3 + (count300 / 3) / 3;
+    let longAvg = ((count2000 - count500) / 15) * 2 / 3 + (count500 / 5) / 3;
 
-    let $rangeBadge2 = $('<div>').attr('class', `dashboard-status ${verifyAlarmStatus(Math.round(100 / avg1000Num))}`);
-    let $avg1000 = $('<div>').attr('class', 'dashboard-item').text(`${avg1000Num > 0 ? Math.round(100 / avg1000Num) : 0}`);
-    $avg1000.append($rangeBadge2);
+    let $rangeBadge1 = $('<div>').attr('class', `dashboard-status ${verifyAlarmStatus(shortAvg)}`);
+    let $avgShort = $('<div>').attr('class', 'dashboard-item').text(`${shortAvg > 0 ? shortAvg.toFixed(1) : 0}`);
+    $avgShort.append($rangeBadge1);
 
-    let $rangeBadge3 = $('<div>').attr('class', `dashboard-status ${verifyAlarmStatus(Math.round(100 / avg2000Num))}`);
-    let $avg2000 = $('<div>').attr('class', 'dashboard-item').text(`${avg2000Num > 0 ? Math.round(100 / avg2000Num) : 0}`);
-    $avg2000.append($rangeBadge3);
+    let $rangeBadge2 = $('<div>').attr('class', `dashboard-status ${verifyAlarmStatus(midAvg)}`);
+    let $avgMiddle = $('<div>').attr('class', 'dashboard-item').text(`${midAvg > 0 ? midAvg.toFixed(1) : 0}`);
+    $avgMiddle.append($rangeBadge2);
 
-    [$avg500, $avg1000, $avg2000, $statusDeep].forEach((v) => $divAverage.append(v));
+    let $rangeBadge3 = $('<div>').attr('class', `dashboard-status ${verifyAlarmStatus(longAvg)}`);
+    let $avgLong = $('<div>').attr('class', 'dashboard-item').text(`${longAvg > 0 ? longAvg.toFixed(1) : 0}`);
+    $avgLong.append($rangeBadge3);
 
-    let countRange1 = data2000.filter((v) => v.index >= analysisDeep + 1 && v.index <= analysisDeep * 2 && v.bust >= 10).length;
-    let countRange2 = data2000.filter((v) => v.index >= analysisDeep * 2 + 1 && v.index <= analysisDeep * 3 && v.bust >= 10).length;
-    let countRange3 = data2000.filter((v) => v.index >= analysisDeep * 3 + 1 && v.index <= analysisDeep * 4 && v.bust >= 10).length;
-    let countRange4 = data2000.filter((v) => v.index <= analysisDeep * 3 && v.bust >= 10).length;
-    let countRange5 = data2000.filter((v) => v.index <= analysisDeep * 4 && v.bust >= 10).length;
+    [$avgShort, $avgMiddle, $avgLong].forEach((v) => $divAverage.append(v));
 
-    let $statusBadge1 = $('<div>').attr('class', `dashboard-status ${verifyAlarmStatus(countRange1)}`);
-    let $status1 = $('<div>').text(`${countRange1}`).attr('class', 'dashboard-item').append($statusBadge1);
+    // let $divStep = $('#game_range_status');
+    // $divStep.empty();
+    // let analysisDeep = 0;
+    // if (data2000.filter((v) => v.index <= 100 && v.bust >= 10).length <= 4) {
+    //     analysisDeep = data2000.filter((v) => v.index > 100 && v.index <= 250).filter((v) => v.bust >= 10).length > 0 ? data2000.filter((v) => v.index > 100 && v.index <= 250).filter((v) => v.bust >= 10).reverse()[0].index : 100;
+    // } else {
+    //     analysisDeep = 100;
+    // }
+    // let $statusDeep = $('<div>').text(`${analysisDeep}`).attr('class', 'dashboard-item flag');
 
-    let $statusBadge2 = $('<div>').attr('class', `dashboard-status ${verifyAlarmStatus(countRange2)}`);
-    let $status2 = $('<div>').text(`${countRange2}`).attr('class', 'dashboard-item').append($statusBadge2);
+    // let $rangeBadge1 = $('<div>').attr('class', `dashboard-status ${verifyAlarmStatus(Math.round(100 / avg500Num))}`);
+    // let $avg500 = $('<div>').attr('class', 'dashboard-item').text(`${avg500Num > 0 ? Math.round(100 / avg500Num) : 0}`);
+    // $avg500.append($rangeBadge1);
 
-    let $statusBadge3 = $('<div>').attr('class', `dashboard-status ${verifyAlarmStatus(countRange3)}`);
-    let $status3 = $('<div>').text(`${countRange3}`).attr('class', 'dashboard-item').append($statusBadge3);
+    // let $rangeBadge2 = $('<div>').attr('class', `dashboard-status ${verifyAlarmStatus(Math.round(100 / avg1000Num))}`);
+    // let $avg1000 = $('<div>').attr('class', 'dashboard-item').text(`${avg1000Num > 0 ? Math.round(100 / avg1000Num) : 0}`);
+    // $avg1000.append($rangeBadge2);
 
-    let $statusBadge4 = $('<div>').attr('class', `dashboard-status ${verifyAlarmStatus(Math.round(100 / (analysisDeep * 3 / countRange4)))}`);
-    let $status4 = $('<div>').text(`${Math.round(100 / (analysisDeep * 3 / countRange4))}`).attr('class', 'dashboard-item').append($statusBadge4);
+    // let $rangeBadge3 = $('<div>').attr('class', `dashboard-status ${verifyAlarmStatus(Math.round(100 / avg2000Num))}`);
+    // let $avg2000 = $('<div>').attr('class', 'dashboard-item').text(`${avg2000Num > 0 ? Math.round(100 / avg2000Num) : 0}`);
+    // $avg2000.append($rangeBadge3);
 
-    let $statusBadge5 = $('<div>').attr('class', `dashboard-status ${verifyAlarmStatus(Math.round(100 / (analysisDeep * 4 / countRange5)))}`);
-    let $status5 = $('<div>').text(`${Math.round(100 / (analysisDeep * 4 / countRange5))}`).attr('class', 'dashboard-item').append($statusBadge5);
+    // [$avg500, $avg1000, $avg2000, $statusDeep].forEach((v) => $divAverage.append(v));
 
-    [$status1, $status2, $status3, $status4, $status5].forEach((v) => $divStep.append(v));
+    // let countRange1 = data2000.filter((v) => v.index >= analysisDeep + 1 && v.index <= analysisDeep * 2 && v.bust >= 10).length;
+    // let countRange2 = data2000.filter((v) => v.index >= analysisDeep * 2 + 1 && v.index <= analysisDeep * 3 && v.bust >= 10).length;
+    // let countRange3 = data2000.filter((v) => v.index >= analysisDeep * 3 + 1 && v.index <= analysisDeep * 4 && v.bust >= 10).length;
+    // let countRange4 = data2000.filter((v) => v.index <= analysisDeep * 3 && v.bust >= 10).length;
+    // let countRange5 = data2000.filter((v) => v.index <= analysisDeep * 4 && v.bust >= 10).length;
+
+    // let $statusBadge1 = $('<div>').attr('class', `dashboard-status ${verifyAlarmStatus(countRange1)}`);
+    // let $status1 = $('<div>').text(`${countRange1}`).attr('class', 'dashboard-item').append($statusBadge1);
+
+    // let $statusBadge2 = $('<div>').attr('class', `dashboard-status ${verifyAlarmStatus(countRange2)}`);
+    // let $status2 = $('<div>').text(`${countRange2}`).attr('class', 'dashboard-item').append($statusBadge2);
+
+    // let $statusBadge3 = $('<div>').attr('class', `dashboard-status ${verifyAlarmStatus(countRange3)}`);
+    // let $status3 = $('<div>').text(`${countRange3}`).attr('class', 'dashboard-item').append($statusBadge3);
+
+    // let $statusBadge4 = $('<div>').attr('class', `dashboard-status ${verifyAlarmStatus(Math.round(100 / (analysisDeep * 3 / countRange4)))}`);
+    // let $status4 = $('<div>').text(`${Math.round(100 / (analysisDeep * 3 / countRange4))}`).attr('class', 'dashboard-item').append($statusBadge4);
+
+    // let $statusBadge5 = $('<div>').attr('class', `dashboard-status ${verifyAlarmStatus(Math.round(100 / (analysisDeep * 4 / countRange5)))}`);
+    // let $status5 = $('<div>').text(`${Math.round(100 / (analysisDeep * 4 / countRange5))}`).attr('class', 'dashboard-item').append($statusBadge5);
+
+    // [$status1, $status2, $status3, $status4, $status5].forEach((v) => $divStep.append(v));
 }
 
 function analysisAlarmPanel() {
@@ -487,11 +510,11 @@ function showRangeAnalysis(data, bust) {
 
     let $label = $('<label>').text(`Above x${bust} (${parseFloat((99 / bust).toFixed(2))}%) : ${aboveItems.length}`).css('font-size', '16px').css('font-weight', '500').css('color', 'rgb(224 224 224)').css('display', 'block');
     let $label1 = $('<label>').text(`${mainRange} - a: ${avgMainDelta.toFixed(2)}, m: ${maxMainDelta}, t: ${data2000.filter((v) => v.index <= 100 && v.bust >= bust).length}`).css('font-size', '12px').css('color', '#fff').css('display', 'block');
-    let $label2 = $('<label>').text(`${mainRange * 2} - a: ${avgMain2Delta.toFixed(2)}, m: ${maxMain2Delta}, t: ${data2000.filter((v) => v.index <= 200 && v.bust >= bust).length}`).css('font-size', '12px').css('color', '#fff').css('display', 'block');
-    let $label3 = $('<label>').text(`${mainRange * 3} - a: ${avgMain3Delta.toFixed(2)}, m: ${maxMain3Delta}, t: ${data2000.filter((v) => v.index <= 300 && v.bust >= bust).length}`).css('font-size', '12px').css('color', '#fff').css('display', 'block');
-    let $label4 = $('<label>').text(`500 - a: ${avg500Delta.toFixed(2)}, m: ${max500Delta}, t: ${data2000.filter((v) => v.index <= 500 && v.bust >= bust).length}`).css('font-size', '12px').css('color', '#fff').css('display', 'block');
-    let $label5 = $('<label>').text(`1000 - a: ${avg1000Delta.toFixed(2)}, m: ${max1000Delta}, t: ${data2000.filter((v) => v.index <= 1000 && v.bust >= bust).length}`).css('font-size', '12px').css('color', '#fff').css('display', 'block');
-    let $label6 = $('<label>').text(`2000 - a: ${avg2000Delta.toFixed(2)}, m: ${max2000Delta}, t: ${data2000.filter((v) => v.index <= 2000 && v.bust >= bust).length}`).css('font-size', '12px').css('color', '#fff').css('display', 'block');
+    let $label2 = $('<label>').text(`${mainRange * 2} - a: ${avgMain2Delta.toFixed(2)}, m: ${maxMain2Delta}, t: ${(data2000.filter((v) => v.index <= 200 && v.bust >= bust).length / 2).toFixed(1)}`).css('font-size', '12px').css('color', '#fff').css('display', 'block');
+    let $label3 = $('<label>').text(`${mainRange * 3} - a: ${avgMain3Delta.toFixed(2)}, m: ${maxMain3Delta}, t: ${(data2000.filter((v) => v.index <= 300 && v.bust >= bust).length / 3).toFixed(1)}`).css('font-size', '12px').css('color', '#fff').css('display', 'block');
+    let $label4 = $('<label>').text(`500 - a: ${avg500Delta.toFixed(2)}, m: ${max500Delta}, t: ${(data2000.filter((v) => v.index <= 500 && v.bust >= bust).length / 5).toFixed(1)}`).css('font-size', '12px').css('color', '#fff').css('display', 'block');
+    let $label5 = $('<label>').text(`1000 - a: ${avg1000Delta.toFixed(2)}, m: ${max1000Delta}, t: ${(data2000.filter((v) => v.index <= 1000 && v.bust >= bust).length / 10).toFixed(1)}`).css('font-size', '12px').css('color', '#fff').css('display', 'block');
+    let $label6 = $('<label>').text(`2000 - a: ${avg2000Delta.toFixed(2)}, m: ${max2000Delta}, t: ${(data2000.filter((v) => v.index <= 2000 && v.bust >= bust).length / 20).toFixed(1)}`).css('font-size', '12px').css('color', '#fff').css('display', 'block');
     let $labelL = $('<label>').text(`avg: ${avgDelta.toFixed(2)}, max: ${maxDelta}`).css('font-weight', '500').css('font-size', '14px').css('color', 'rgb(255 128 0)').css('display', 'block').css('margin-bottom', '4px');
 
     [$label, $labelL, $label1, $label2, $label3, $label4, $label5, $label6].forEach((v) => $div.append(v).css('display', 'block'));
@@ -504,6 +527,54 @@ function subString(text, limitLength) {
     } else {
         return text;
     }
+}
+
+function predictNextPayout() {
+    const MC = 10, KDJ = 5, AVG = 100;
+    const gameHash = $('#game_hash_input').val();
+    let rows = 51;
+    let matrix = Array.from({ length: rows }, (_, index) => [index, 0, 0]);
+
+    duration = 0;
+    dataPrediction = [];
+    let calcLength = Math.floor((rows - 1) / 10) * MC * KDJ;
+
+    for (let item of gameResults(gameHash, calcLength)) {
+        setTimeout(addTableRow.bind(null, item.hash, item.bust, dataPrediction.length), dataPrediction.length * 1);
+        dataPrediction.push(item.bust);
+        duration += Math.log(item.bust || 1) / 0.00006;
+    }
+
+    for (let i = 0; i < dataPrediction.length; i++) {
+        for (let j = 11; j < rows; j++) {
+            let calcLen = (j / 10) * MC * KDJ;
+            
+            if (i <= calcLen) {
+                if (dataPrediction[i] >= j / 10) {
+                    matrix[j][1]++;
+                }
+
+                let avgStep = matrix[j][1] > 0 ? i / matrix[j][1] : 0;
+    
+                //    let stdStep = 100 / (99 / (j / 10));
+                let maxCombos = (j / 10) * MC;
+                let curStep = maxCombos * KDJ;
+    
+                let mainModel = avgStep / curStep;
+                matrix[j][2] = Math.max(matrix[j][2], mainModel.toFixed(2));
+            }
+        }
+    }
+
+    let sortedMatrix = matrix.slice(11, 51).sort((a, b) => b[2] - a[2]);
+
+    let content = sortedMatrix[0][0] / 10;
+    for (let i = 1; i < 10; i++) {
+        content += `, ${sortedMatrix[i][0] / 10}`;
+    }
+
+    $('#prediction_container').text(content);
+    console.log(content)
 }
 
 // function gameResultsAdd(data, amount) {
@@ -525,11 +596,22 @@ function subString(text, limitLength) {
 // }
 
 function showDotChart() {
+    const gameHash = $('#game_hash_input').val();
     let $dotchart = $('#game_dot_chart');
     let dotGroupCount = 0;
     $dotchart.empty();
 
-    data.forEach((v, i) => {
+    duration = 0;
+
+    let dataDot = [];
+    let index = 0;
+    for (let item of gameResults(gameHash, 300)) {
+        setTimeout(addTableRow.bind(null, item.hash, item.bust, dataDot.length), dataDot.length * 1);
+        dataDot.unshift({ ...item, index: ++index });
+        duration += Math.log(item.bust || 1) / 0.00006;
+    }
+
+    dataDot.forEach((v, i) => {
         let $item = $('<div>').attr('class', 'dot-item').attr('title', `${v.bust} (${v.index})`);
         $item.click((e) => {
             showBustStatusModal(e.pageX, e.pageY, v.bust, v.index);
@@ -544,7 +626,7 @@ function showDotChart() {
             $group.append($item);
             $dotchart.append($group);
         } else {
-            if (compareBustPrevious(v.bust, data[i - 1].bust)) {
+            if (compareBustPrevious(v.bust, dataDot[i - 1].bust)) {
                 let $group = $(`#dot_group${dotGroupCount}`);
                 if ($group.children().length >= 6) {
                     $item.append($dot).css('position', 'absolute').css('bottom', 0).css('right', `${($group.children().length - 6) * 14}px`);
@@ -566,7 +648,7 @@ function showDotChart() {
     });
 }
 
-function shotBustList() {
+function showBustList() {
     let $bustlist = $('.bust-list');
     $bustlist.empty();
 
@@ -630,16 +712,16 @@ function controlComboStatus() {
     let latestBust = busts[0];
 
     if (latestBust < 3) {
-        combo3xCount ++;
-        
+        combo3xCount++;
+
         if (latestBust < 1.2) {
-            combo12xCount ++;
+            combo12xCount++;
         }
         if (latestBust >= 1.2 && latestBust < 1.5) {
-            combo15xCount ++;
+            combo15xCount++;
         }
         if (latestBust >= 1.5 && latestBust < 2) {
-            combo2xCount ++;
+            combo2xCount++;
         }
     } else {
         combo12xCount = 0;
@@ -648,95 +730,85 @@ function controlComboStatus() {
         combo3xCount = 0;
     }
 
-    if (combo12xCount >= 2) {
-        condition12x ++;
-        prediction = '👇1.2x';
-        predictionAmount = 1.1;
+    // if (combo12xCount >= 2) {
+    //     condition12x ++;
+    //     prediction = '👇1.2x';
+    //     predictionAmount = 1.1;
 
-        if (20 / data2000.filter((v) => v.index <= 20 && v.bust < 1.2).length < 7) {
-            condition12x ++;
-            prediction = '🤝1.2x';
-            predictionAmount = 1.2;
-        }
-        if (30 / data2000.filter((v) => v.index <= 30 && v.bust < 1.2).length < 7) {
-            condition12x ++;
-            prediction = '👆1.2x';
-            predictionAmount = 1.3;
-        }
-    }
+    //     if (20 / data2000.filter((v) => v.index <= 20 && v.bust < 1.2).length < 7) {
+    //         condition12x ++;
+    //         prediction = '🤝1.2x';
+    //         predictionAmount = 1.2;
+    //     }
+    //     if (30 / data2000.filter((v) => v.index <= 30 && v.bust < 1.2).length < 7) {
+    //         condition12x ++;
+    //         prediction = '👆1.2x';
+    //         predictionAmount = 1.3;
+    //     }
+    // }
 
-    if (combo15xCount >= 4) {
-        combo15xCount ++;
-        prediction = '👇1.5x';
+    // if (combo15xCount >= 4) {
+    //     combo15xCount ++;
+    //     prediction = '👇1.5x';
 
-        if (predictionAmount > 1.2) {
-            prediction = '👆1.2x && 👇1.5x';
-            predictionAmount = 1.4;
-        }
+    //     if (predictionAmount > 1.2) {
+    //         prediction = '👆1.2x && 👇1.5x';
+    //         predictionAmount = 1.4;
+    //     }
 
-        if (20 / data2000.filter((v) => v.index <= 20 && v.bust < 1.5).length < 4) {
-            condition15x ++;
-            prediction = '👆1.2x && 🤝1.5x';
-            predictionAmount = 1.5;
-        }
-        if (30 / data2000.filter((v) => v.index <= 30 && v.bust < 1.5).length < 4) {
-            condition15x ++;
-            prediction = '👆1.2x && 👆1.5x';
-            predictionAmount = 1.6;
-        }
-    }
+    //     if (20 / data2000.filter((v) => v.index <= 20 && v.bust < 1.5).length < 4) {
+    //         condition15x ++;
+    //         prediction = '👆1.2x && 🤝1.5x';
+    //         predictionAmount = 1.5;
+    //     }
+    //     if (30 / data2000.filter((v) => v.index <= 30 && v.bust < 1.5).length < 4) {
+    //         condition15x ++;
+    //         prediction = '👆1.2x && 👆1.5x';
+    //         predictionAmount = 1.6;
+    //     }
+    // }
 
-    if (combo2xCount >= 8) {
-        condition2x ++;
-        prediction = '👇2x';
+    // if (combo2xCount >= 8) {
+    //     condition2x ++;
+    //     prediction = '👇2x';
 
-        if (predictionAmount > 1.5) {
-            prediction = '👆1.5x && 👇2x';
-            predictionAmount = 1.9;
-        }
+    //     if (predictionAmount > 1.5) {
+    //         prediction = '👆1.5x && 👇2x';
+    //         predictionAmount = 1.9;
+    //     }
 
-        if (20 / data2000.filter((v) => v.index <= 20 && v.bust < 2).length > 3) {
-            condition2x ++;
-            prediction = '👆1.5x && 🤝2x';
-            predictionAmount = 2;
-        }
-        if (30 / data2000.filter((v) => v.index <= 30 && v.bust < 2).length > 3) {
-            condition2x ++;
-            prediction = '👆1.5x && 👆2x';
-            predictionAmount = 2.1;
-        }
-    }
+    //     if (20 / data2000.filter((v) => v.index <= 20 && v.bust < 2).length > 3) {
+    //         condition2x ++;
+    //         prediction = '👆1.5x && 🤝2x';
+    //         predictionAmount = 2;
+    //     }
+    //     if (30 / data2000.filter((v) => v.index <= 30 && v.bust < 2).length > 3) {
+    //         condition2x ++;
+    //         prediction = '👆1.5x && 👆2x';
+    //         predictionAmount = 2.1;
+    //     }
+    // }
 
-    if (combo3xCount >= 6) {
-        condition3x ++;
-        prediction = '👇3x';
+    // if (combo3xCount >= 6) {
+    //     condition3x ++;
+    //     prediction = '👇3x';
 
-        if (predictionAmount > 2) {
-            prediction = '👆2x && 👇3x';
-            predictionAmount = 2.9;
-        }
+    //     if (predictionAmount > 2) {
+    //         prediction = '👆2x && 👇3x';
+    //         predictionAmount = 2.9;
+    //     }
 
-        if (20 / data2000.filter((v) => v.index <= 20 && v.bust < 3).length > 6) {
-            condition3x ++;
-            prediction = '👆2x && 🤝3x';
-            predictionAmount = 3;
-        }
-        if (30 / data2000.filter((v) => v.index <= 30 && v.bust < 3).length > 6) {
-            condition3x ++;
-            prediction = '👆2x && 👆3x';
-            predictionAmount = 3.1;
-        }
-    }
-
-    let $panel = $('#prediction_container');
-    $panel.empty();
-
-    let $status12x = $('<div>').attr('class', `alarm-status ${verifyPredictionStatus(predictionAmount)}`);
-    let $status15x = $('<div>').attr('class', `alarm-status ${verifyPredictionStatus(predictionAmount)}`);
-    let $status2x = $('<div>').attr('class', `alarm-status ${verifyPredictionStatus(predictionAmount)}`);
-    let $status3x = $('<div>').attr('class', `alarm-status ${verifyPredictionStatus(predictionAmount)}`);
-
-    [$status12x, $status15x, $status2x, $status3x].forEach(v => $panel.append(v));
+    //     if (20 / data2000.filter((v) => v.index <= 20 && v.bust < 3).length > 6) {
+    //         condition3x ++;
+    //         prediction = '👆2x && 🤝3x';
+    //         predictionAmount = 3;
+    //     }
+    //     if (30 / data2000.filter((v) => v.index <= 30 && v.bust < 3).length > 6) {
+    //         condition3x ++;
+    //         prediction = '👆2x && 👆3x';
+    //         predictionAmount = 3.1;
+    //     }
+    // }
 
     if (predictionAmount > 0) {
         message = `Next prediction: ${prediction}`;
@@ -1007,7 +1079,7 @@ $('#game_payout').on('keyup', (e) => {
 
         drawChartMain();
         showDotChart();
-        shotBustList();
+        showBustList();
     }
 });
 
@@ -1086,6 +1158,7 @@ function prob(multiplier) {
         throw new Error(`multiplier must be a number or array instead of '${typeof multiplier}'.`);
     }
 }
+
 prob.invert = function (probability) {
     if (Array.isArray(probability)) {
         let result = [];
