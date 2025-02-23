@@ -15,7 +15,7 @@ const gridWidth = cols * cellWidth;
 const gridHeight = rows * cellHeight;
 
 function drawGrid() {
-    ctx.strokeStyle = '#444'; // Grid line color
+    ctx.strokeStyle = '#444';
 
     for (let col = 0; col <= cols; col++) {
         const x = canvas.width - gridWidth + col * cellWidth;
@@ -53,30 +53,31 @@ chrome.storage.local.get(['latestHash'], (result) => {
     document.getElementById('game_verify_submit').click();
 });
 
-var userId = '';
 let latestComboCount = 0;
 
 const saltString = '0000000000000000000301e2801a9a9598bfb114e574a91a887f2132f33047e6';
 
-// Update hash
 window.addEventListener('message', (event) => {
     if (event.data?.hash) {
         $('#game_hash_input').val(event.data?.hash);
+
         const gameAmount = Number($('#game_amount_input').val());
         verify(event.data?.hash, gameAmount);
     }
 });
 
-// making bulma.css tabs work
 $('.tabs ul li a').click(function () {
     const $this = $(this),
         $tabs = $this.closest('.tabs'),
         $li = $this.closest('li'),
         $lis = $tabs.find('ul > li');
+
     const id = $tabs.attr('id'),
         index = $lis.index($li);
+
     $lis.removeClass('is-active');
     $li.addClass('is-active');
+
     $(`#${id}-content > div`).addClass('is-hidden');
     $(`#${id}-content > div:eq(${index})`).removeClass('is-hidden');
 });
@@ -86,27 +87,28 @@ function enterLoadState() {
     $('#game_verify_submit, #chart_plus_1_submit, #chart_plus_10_submit, #chart_plus_100_submit').addClass('is-loading');
     $('#game_hash_input, #game_amount_input, #game_verify_submit').attr('disabled', 'disabled');
 }
+
 function exitLoadState() {
     $('#game_hash_input').parent().removeClass('is-loading');
     $('#game_verify_submit, #chart_plus_1_submit, #chart_plus_10_submit, #chart_plus_100_submit').removeClass('is-loading');
     $('#game_hash_input, #game_amount_input, #game_verify_submit').removeAttr('disabled');
 }
 
-var $range = $('.range-analysis');
+let $range = $('.range-analysis');
 
-var isVerifying = false;
-var data = [];
-var data300 = [];
-var data500 = [];
-var data2000 = [];
-var dataAnalysisRange = [];
-var dataDot = [];
-var combo12xCount = 0;
-var combo15xCount = 0;
-var combo2xCount = 0;
-var combo3xCount = 0;
-var gameRedThresold = Number($('#game_payout').val());
-var duration = 0;
+let isVerifying = false;
+let data = [];
+let data300 = [];
+let data500 = [];
+let data2000 = [];
+let dataAnalysisRange = [];
+let dataDot = [];
+let combo12xCount = 0;
+let combo15xCount = 0;
+let combo2xCount = 0;
+let combo3xCount = 0;
+let gameRedThresold = Number($('#game_payout').val());
+let duration = 0;
 
 $('#game_verify_submit').on('click', () => {
     const gameHash = $('#game_hash_input').val();
@@ -127,7 +129,7 @@ function verify(gameHash, gameAmount) {
     duration = 0;
 
     data = [];
-    var index = 0;
+    let index = 0;
     for (let item of gameResults(gameHash, gameAmount)) {
         setTimeout(addTableRow.bind(null, item.hash, item.bust, data.length), data.length * 1);
         data.unshift({ ...item, index: ++index });
@@ -137,7 +139,6 @@ function verify(gameHash, gameAmount) {
     // [1000, 100, 10, 9, 8, 5, 3, 2, 1.5].forEach((v) => showRangeAnalysis(data, v));
     analysisGameRange();
 
-    showSequenceRed();
     drawChartMain();
     showBustList();
     showDotChart();
@@ -233,53 +234,6 @@ function analysisDashboard() {
     $avgLong.append($rangeBadge3);
 
     [$avgShort, $avgMiddle, $avgLong].forEach((v) => $divAverage.append(v));
-
-    // let $divStep = $('#game_range_status');
-    // $divStep.empty();
-    // let analysisDeep = 0;
-    // if (data2000.filter((v) => v.index <= 100 && v.bust >= 10).length <= 4) {
-    //     analysisDeep = data2000.filter((v) => v.index > 100 && v.index <= 250).filter((v) => v.bust >= 10).length > 0 ? data2000.filter((v) => v.index > 100 && v.index <= 250).filter((v) => v.bust >= 10).reverse()[0].index : 100;
-    // } else {
-    //     analysisDeep = 100;
-    // }
-    // let $statusDeep = $('<div>').text(`${analysisDeep}`).attr('class', 'dashboard-item flag');
-
-    // let $rangeBadge1 = $('<div>').attr('class', `dashboard-status ${verifyAlarmStatus(Math.round(100 / avg500Num))}`);
-    // let $avg500 = $('<div>').attr('class', 'dashboard-item').text(`${avg500Num > 0 ? Math.round(100 / avg500Num) : 0}`);
-    // $avg500.append($rangeBadge1);
-
-    // let $rangeBadge2 = $('<div>').attr('class', `dashboard-status ${verifyAlarmStatus(Math.round(100 / avg1000Num))}`);
-    // let $avg1000 = $('<div>').attr('class', 'dashboard-item').text(`${avg1000Num > 0 ? Math.round(100 / avg1000Num) : 0}`);
-    // $avg1000.append($rangeBadge2);
-
-    // let $rangeBadge3 = $('<div>').attr('class', `dashboard-status ${verifyAlarmStatus(Math.round(100 / avg2000Num))}`);
-    // let $avg2000 = $('<div>').attr('class', 'dashboard-item').text(`${avg2000Num > 0 ? Math.round(100 / avg2000Num) : 0}`);
-    // $avg2000.append($rangeBadge3);
-
-    // [$avg500, $avg1000, $avg2000, $statusDeep].forEach((v) => $divAverage.append(v));
-
-    // let countRange1 = data2000.filter((v) => v.index >= analysisDeep + 1 && v.index <= analysisDeep * 2 && v.bust >= 10).length;
-    // let countRange2 = data2000.filter((v) => v.index >= analysisDeep * 2 + 1 && v.index <= analysisDeep * 3 && v.bust >= 10).length;
-    // let countRange3 = data2000.filter((v) => v.index >= analysisDeep * 3 + 1 && v.index <= analysisDeep * 4 && v.bust >= 10).length;
-    // let countRange4 = data2000.filter((v) => v.index <= analysisDeep * 3 && v.bust >= 10).length;
-    // let countRange5 = data2000.filter((v) => v.index <= analysisDeep * 4 && v.bust >= 10).length;
-
-    // let $statusBadge1 = $('<div>').attr('class', `dashboard-status ${verifyAlarmStatus(countRange1)}`);
-    // let $status1 = $('<div>').text(`${countRange1}`).attr('class', 'dashboard-item').append($statusBadge1);
-
-    // let $statusBadge2 = $('<div>').attr('class', `dashboard-status ${verifyAlarmStatus(countRange2)}`);
-    // let $status2 = $('<div>').text(`${countRange2}`).attr('class', 'dashboard-item').append($statusBadge2);
-
-    // let $statusBadge3 = $('<div>').attr('class', `dashboard-status ${verifyAlarmStatus(countRange3)}`);
-    // let $status3 = $('<div>').text(`${countRange3}`).attr('class', 'dashboard-item').append($statusBadge3);
-
-    // let $statusBadge4 = $('<div>').attr('class', `dashboard-status ${verifyAlarmStatus(Math.round(100 / (analysisDeep * 3 / countRange4)))}`);
-    // let $status4 = $('<div>').text(`${Math.round(100 / (analysisDeep * 3 / countRange4))}`).attr('class', 'dashboard-item').append($statusBadge4);
-
-    // let $statusBadge5 = $('<div>').attr('class', `dashboard-status ${verifyAlarmStatus(Math.round(100 / (analysisDeep * 4 / countRange5)))}`);
-    // let $status5 = $('<div>').text(`${Math.round(100 / (analysisDeep * 4 / countRange5))}`).attr('class', 'dashboard-item').append($statusBadge5);
-
-    // [$status1, $status2, $status3, $status4, $status5].forEach((v) => $divStep.append(v));
 }
 
 function analysisAlarmPanel() {
@@ -320,18 +274,17 @@ function analysisAlarmPanel() {
 }
 
 function verifyAlarmStatus(param) {
-    if (param <= 4) {
+    if (param <= 4)
         return 'golden';
-    } else if (param > 4 && param < 9) {
+    else if (param > 4 && param < 9)
         return 'normal';
-    } else {
+    else
         return 'bad';
-    }
 }
 
 function verifyRange1(gameHash, gameAmount) {
     data300 = [];
-    var index = 0;
+    let index = 0;
 
     for (let item of gameResults(gameHash, gameAmount)) {
         setTimeout(addTableRow.bind(null, item.hash, item.bust, data300.length), data300.length * 1);
@@ -344,7 +297,7 @@ function verifyRange1(gameHash, gameAmount) {
 
 function verifyRange2(gameHash, gameAmount) {
     data500 = [];
-    var index = 0;
+    let index = 0;
 
     for (let item of gameResults(gameHash, gameAmount)) {
         setTimeout(addTableRow.bind(null, item.hash, item.bust, data500.length), data500.length * 1);
@@ -357,14 +310,13 @@ function verifyRange2(gameHash, gameAmount) {
 
 function verifyRangeLong(gameHash, gameAmount) {
     data2000 = [];
-    var index = 0;
+    let index = 0;
 
     for (let item of gameResults(gameHash, gameAmount)) {
         setTimeout(addTableRow.bind(null, item.hash, item.bust, data2000.length), data2000.length * 1);
         data2000.unshift({ ...item, index: ++index });
         duration += Math.log(item.bust || 1) / 0.00006;
     }
-
     controlComboStatus();
 }
 
@@ -378,7 +330,6 @@ function analysisAverageRange(gameHash, range) {
         dataAnalysisRange.unshift({ ...item, index: ++index });
         duration += Math.log(item.bust || 1) / 0.00006;
     }
-
     printLongAverage(range, perRange);
 }
 
@@ -424,16 +375,12 @@ function showRangeAnalysis(data, bust) {
     aboveItems.reverse().forEach((item, i) => {
         if (lastIndex > 0) {
             delta = item.index - lastIndex;
-
-            if (delta > maxDelta) {
-                maxDelta = delta;
-            }
-
+            if (delta > maxDelta) maxDelta = delta;
             totalDelta += delta;
         }
-
         lastIndex = item.index;
     });
+
     avgDelta = avgDelta = Number($('#game_amount_input').val()) / aboveItems.filter((v) => v.bust >= bust).length;
 
     avgMainDelta = mainRange / data2000.filter((v) => v.index <= mainRange && v.bust >= bust).length;
@@ -441,9 +388,7 @@ function showRangeAnalysis(data, bust) {
     data2000.filter((v) => v.index <= mainRange && v.bust >= bust).reverse().forEach(v => {
         if (lastIndex > 0) {
             delta = v.index - lastIndex;
-            if (delta > maxMainDelta) {
-                maxMainDelta = delta;
-            }
+            if (delta > maxMainDelta) maxMainDelta = delta;
         }
         lastIndex = v.index;
     });
@@ -453,9 +398,7 @@ function showRangeAnalysis(data, bust) {
     data2000.filter((v) => v.index <= mainRange * 2 && v.bust >= bust).reverse().forEach(v => {
         if (lastIndex > 0) {
             delta = v.index - lastIndex;
-            if (delta > maxMain2Delta) {
-                maxMain2Delta = delta;
-            }
+            if (delta > maxMain2Delta) maxMain2Delta = delta;
         }
         lastIndex = v.index;
     });
@@ -465,9 +408,7 @@ function showRangeAnalysis(data, bust) {
     data2000.filter((v) => v.index <= mainRange * 3 && v.bust >= bust).reverse().forEach(v => {
         if (lastIndex > 0) {
             delta = v.index - lastIndex;
-            if (delta > maxMain3Delta) {
-                maxMain3Delta = delta;
-            }
+            if (delta > maxMain3Delta) maxMain3Delta = delta;
         }
         lastIndex = v.index;
     });
@@ -477,9 +418,7 @@ function showRangeAnalysis(data, bust) {
     data2000.filter((v) => v.index <= 500 && v.bust >= bust).reverse().forEach(v => {
         if (lastIndex > 0) {
             delta = v.index - lastIndex;
-            if (delta > max500Delta) {
-                max500Delta = delta;
-            }
+            if (delta > max500Delta) max500Delta = delta;
         }
         lastIndex = v.index;
     });
@@ -489,9 +428,7 @@ function showRangeAnalysis(data, bust) {
     data2000.filter((v) => v.index <= 1000 && v.bust >= bust).reverse().forEach(v => {
         if (lastIndex > 0) {
             delta = v.index - lastIndex;
-            if (delta > max1000Delta) {
-                max1000Delta = delta;
-            }
+            if (delta > max1000Delta) max1000Delta = delta;
         }
         lastIndex = v.index;
     });
@@ -501,9 +438,7 @@ function showRangeAnalysis(data, bust) {
     data2000.filter((v) => v.index <= 2000 && v.bust >= bust).reverse().forEach(v => {
         if (lastIndex > 0) {
             delta = v.index - lastIndex;
-            if (delta > max2000Delta) {
-                max2000Delta = delta;
-            }
+            if (delta > max2000Delta) max2000Delta = delta;
         }
         lastIndex = v.index;
     });
@@ -522,15 +457,14 @@ function showRangeAnalysis(data, bust) {
 }
 
 function subString(text, limitLength) {
-    if (text.length > limitLength) {
+    if (text.length > limitLength)
         return text.substring(0, limitLength) + '...';
-    } else {
+    else
         return text;
-    }
 }
 
 function predictNextPayout() {
-    const MC = 10, KDJ = 5, AVG = 100;
+    const MC = 10, KDJ = 5;
     const gameHash = $('#game_hash_input').val();
     let rows = 51;
     let matrix = Array.from({ length: rows }, (_, index) => [index, 0, 0]);
@@ -548,18 +482,16 @@ function predictNextPayout() {
     for (let i = 0; i < dataPrediction.length; i++) {
         for (let j = 11; j < rows; j++) {
             let calcLen = (j / 10) * MC * KDJ;
-            
+
             if (i <= calcLen) {
-                if (dataPrediction[i] >= j / 10) {
+                if (dataPrediction[i] >= j / 10)
                     matrix[j][1]++;
-                }
 
                 let avgStep = matrix[j][1] > 0 ? i / matrix[j][1] : 0;
-    
-                //    let stdStep = 100 / (99 / (j / 10));
+
                 let maxCombos = (j / 10) * MC;
                 let curStep = maxCombos * KDJ;
-    
+
                 let mainModel = avgStep / curStep;
                 matrix[j][2] = Math.max(matrix[j][2], mainModel.toFixed(2));
             }
@@ -569,31 +501,11 @@ function predictNextPayout() {
     let sortedMatrix = matrix.slice(11, 51).sort((a, b) => b[2] - a[2]);
 
     let content = sortedMatrix[0][0] / 10;
-    for (let i = 1; i < 10; i++) {
+    for (let i = 1; i < 10; i++)
         content += `, ${sortedMatrix[i][0] / 10}`;
-    }
 
     $('#prediction_container').text(content);
-    console.log(content)
 }
-
-// function gameResultsAdd(data, amount) {
-//   var index = data[0].index;
-//   var hash = CryptoJS.SHA256(data[0].hash);
-
-//   for (let item of gameResults(hash, amount)) {
-//     setTimeout(addTableRow.bind(null, item.hash, item.bust, data.length), data.length * 1);
-//     data.unshift({ ...item, index: ++index });
-//     duration += Math.log(item.bust || 1) / 0.00006;
-//   }
-
-//   // Range Analysis
-//   $range.empty();
-//   [1.5, 2, 5, 9, 10, 100, 1000].forEach((v) => showRangeAnalysis(data, v));
-
-//   showSequenceRed();
-//   drawChartMain();
-// }
 
 function showDotChart() {
     const gameHash = $('#game_hash_input').val();
@@ -628,11 +540,10 @@ function showDotChart() {
         } else {
             if (compareBustPrevious(v.bust, dataDot[i - 1].bust)) {
                 let $group = $(`#dot_group${dotGroupCount}`);
-                if ($group.children().length >= 6) {
+                if ($group.children().length >= 6)
                     $item.append($dot).css('position', 'absolute').css('bottom', 0).css('right', `${($group.children().length - 6) * 14}px`);
-                } else {
+                else
                     $item.append($dot);
-                }
 
                 $group.append($item);
                 $dotchart.append($group);
@@ -697,12 +608,7 @@ function controlComboStatus() {
     $('#alert_content').text('Wait chance!');
 
     let message;
-    // let condition = 0;
     let status = false;
-    let condition12x = 0;
-    let condition15x = 0;
-    let condition2x = 0;
-    let condition3x = 0;
 
     let prediction = '';
     let predictionAmount = 0;
@@ -714,15 +620,12 @@ function controlComboStatus() {
     if (latestBust < 3) {
         combo3xCount++;
 
-        if (latestBust < 1.2) {
+        if (latestBust < 1.2)
             combo12xCount++;
-        }
-        if (latestBust >= 1.2 && latestBust < 1.5) {
+        if (latestBust >= 1.2 && latestBust < 1.5)
             combo15xCount++;
-        }
-        if (latestBust >= 1.5 && latestBust < 2) {
+        if (latestBust >= 1.5 && latestBust < 2)
             combo2xCount++;
-        }
     } else {
         combo12xCount = 0;
         combo15xCount = 0;
@@ -730,216 +633,89 @@ function controlComboStatus() {
         combo3xCount = 0;
     }
 
-    // if (combo12xCount >= 2) {
-    //     condition12x ++;
-    //     prediction = '👇1.2x';
-    //     predictionAmount = 1.1;
-
-    //     if (20 / data2000.filter((v) => v.index <= 20 && v.bust < 1.2).length < 7) {
-    //         condition12x ++;
-    //         prediction = '🤝1.2x';
-    //         predictionAmount = 1.2;
-    //     }
-    //     if (30 / data2000.filter((v) => v.index <= 30 && v.bust < 1.2).length < 7) {
-    //         condition12x ++;
-    //         prediction = '👆1.2x';
-    //         predictionAmount = 1.3;
-    //     }
-    // }
-
-    // if (combo15xCount >= 4) {
-    //     combo15xCount ++;
-    //     prediction = '👇1.5x';
-
-    //     if (predictionAmount > 1.2) {
-    //         prediction = '👆1.2x && 👇1.5x';
-    //         predictionAmount = 1.4;
-    //     }
-
-    //     if (20 / data2000.filter((v) => v.index <= 20 && v.bust < 1.5).length < 4) {
-    //         condition15x ++;
-    //         prediction = '👆1.2x && 🤝1.5x';
-    //         predictionAmount = 1.5;
-    //     }
-    //     if (30 / data2000.filter((v) => v.index <= 30 && v.bust < 1.5).length < 4) {
-    //         condition15x ++;
-    //         prediction = '👆1.2x && 👆1.5x';
-    //         predictionAmount = 1.6;
-    //     }
-    // }
-
-    // if (combo2xCount >= 8) {
-    //     condition2x ++;
-    //     prediction = '👇2x';
-
-    //     if (predictionAmount > 1.5) {
-    //         prediction = '👆1.5x && 👇2x';
-    //         predictionAmount = 1.9;
-    //     }
-
-    //     if (20 / data2000.filter((v) => v.index <= 20 && v.bust < 2).length > 3) {
-    //         condition2x ++;
-    //         prediction = '👆1.5x && 🤝2x';
-    //         predictionAmount = 2;
-    //     }
-    //     if (30 / data2000.filter((v) => v.index <= 30 && v.bust < 2).length > 3) {
-    //         condition2x ++;
-    //         prediction = '👆1.5x && 👆2x';
-    //         predictionAmount = 2.1;
-    //     }
-    // }
-
-    // if (combo3xCount >= 6) {
-    //     condition3x ++;
-    //     prediction = '👇3x';
-
-    //     if (predictionAmount > 2) {
-    //         prediction = '👆2x && 👇3x';
-    //         predictionAmount = 2.9;
-    //     }
-
-    //     if (20 / data2000.filter((v) => v.index <= 20 && v.bust < 3).length > 6) {
-    //         condition3x ++;
-    //         prediction = '👆2x && 🤝3x';
-    //         predictionAmount = 3;
-    //     }
-    //     if (30 / data2000.filter((v) => v.index <= 30 && v.bust < 3).length > 6) {
-    //         condition3x ++;
-    //         prediction = '👆2x && 👆3x';
-    //         predictionAmount = 3.1;
-    //     }
-    // }
-
     if (predictionAmount > 0) {
         message = `Next prediction: ${prediction}`;
         status = true;
         $('#alert_content').text(message);
     }
-
     if ((500 / range500count >= 12) && (1000 / range1000count >= 12) && (2000 / range2000count >= 12)) {
         message = `You should pay attention! (Average). ${predictionAmount > 0 ? 'Prediction: ' + prediction : ''}`;
         status = true;
         customBadgeClass('normal');
         $('#alert_content').text(message);
     }
-
     if ((500 / range500count + 1000 / range1000count + 2000 / range2000count >= 12) / 3 >= 12) {
         message = `You should pay attention! (Average). ${predictionAmount > 0 ? 'Prediction: ' + prediction : ''}`;
         status = true;
         customBadgeClass('normal');
         $('#alert_content').text(message);
     }
-
     if (data2000.filter((v) => v.index < 26 && v.bust >= 10).length <= 0) {
         message = `Pay attention! No 10X in over 25 times. ${predictionAmount > 0 ? 'Prediction: ' + prediction : ''}`;
         status = true;
         customBadgeClass('normal');
         $('#alert_content').text(message);
     }
-
     if (data2000.filter((v) => v.index < 31 && v.bust >= 10).length <= 0) {
         message = `Pay attention! No 10X in over 30 times. ${predictionAmount > 0 ? 'Prediction: ' + prediction : ''}`;
         status = true;
         customBadgeClass('normal');
         $('#alert_content').text(message);
     }
-
     if (data2000.filter((v) => v.index < 36 && v.bust >= 10).length <= 0) {
         message = `Pay attention! No 10X in over 35 times. ${predictionAmount > 0 ? 'Prediction: ' + prediction : ''}`;
         status = true;
         customBadgeClass('normal');
         $('#alert_content').text(message);
     }
-
     if (data2000.filter((v) => v.index < 41 && v.bust >= 10).length <= 0) {
         message = `Pay attention! No 10X in over 40 times. ${predictionAmount > 0 ? 'Prediction: ' + prediction : ''}`;
         status = true;
         customBadgeClass('golden');
         $('#alert_content').text(message);
     }
-
     if (analysisRangeState(range500count, range1000count, range2000count)) {
         message = `Pay attention! Combo. ${predictionAmount > 0 ? 'Prediction: ' + prediction : ''}`;
         status = true;
         customBadgeClass('golden');
         $('#alert_content').text(message);
     }
-
     if ((data2000.filter((v) => v.index < 81 && v.bust >= 10).length <= 3) && data2000.filter((v) => v.index < 80 && v.bust !== 10).length >= 70) {
         message = `Pay attention! Not good 10X in over 70 times. ${predictionAmount > 0 ? 'Prediction: ' + prediction : ''}`;
         status = true;
         customBadgeClass('golden');
         $('#alert_content').text(message);
     }
-
     if (range100count <= 4) {
         message = `Pay attention! 10X only ${range100count} times in 100 rounds. ${predictionAmount > 0 ? 'Prediction: ' + prediction : ''}`;
         status = true;
         customBadgeClass('golden');
         $('#alert_content').text(message);
     }
-
     if (range200count >= 8 && range200count <= 10) {
         message = `Pay attention! 10X only ${range200count} times in 200 rounds. ${predictionAmount > 0 ? 'Prediction: ' + prediction : ''}`;
         status = true;
         customBadgeClass('golden');
         $('#alert_content').text(message);
     }
-
     if (range300count >= 12 && range300count <= 15) {
         message = `Pay attention! 10X only ${range300count} times in 300 rounds. ${predictionAmount > 0 ? 'Prediction: ' + prediction : ''}`;
         status = true;
         customBadgeClass('golden');
         $('#alert_content').text(message);
     }
-
     if (range400count >= 16 && range400count <= 20) {
         message = `Pay attention! 10X only ${range400count} times in 400 rounds. ${predictionAmount > 0 ? 'Prediction: ' + prediction : ''}`;
         status = true;
         customBadgeClass('golden');
         $('#alert_content').text(message);
     }
-
     if (range400count >= 16 && range400count <= 20) {
         message = `Pay attention! 10X only ${range400count} times in 400 rounds. ${predictionAmount > 0 ? 'Prediction: ' + prediction : ''}`;
         status = true;
         customBadgeClass('golden');
         $('#alert_content').text(message);
     }
-
-    // for (let i = 0; i < 180; i++) {
-    //     let count10X = data2000.filter((v) => v.index <= 180 && v.bust >= 10).length;
-    //     let avgStep = i / (count10X == 0 ? 1 : count10X);
-
-    //     if (count10X === 0 && avgStep >= 45) { condition = 1; }
-    //     if (count10X === 1 && avgStep >= 60) { condition = 1; }
-    //     if (count10X === 2 && avgStep >= 35) { condition = 1; }
-    //     if (count10X === 3 && avgStep >= 25) { condition = 1; }
-    //     if (count10X === 4 && avgStep >= 22) { condition = 1; }
-    //     if (count10X === 5 && avgStep >= 20) { condition = 1; }
-    //     if (count10X === 6 && avgStep >= 19) { condition = 1; }
-    //     if (count10X === 7 && avgStep >= 18) { condition = 1; }
-    //     if (count10X === 8 && avgStep >= 17) { condition = 1; }
-    //     if (count10X === 9 && avgStep >= 16) { condition = 1; }
-    //     if (count10X === 10 && avgStep >= 15) { condition = 1; }
-
-    //     if (condition === 1) {
-    //         // let len = i * 2 > g_History.length ? i * 2 : g_History.length;
-
-    //         // for (let j = i; j < len; j++) {
-    //         //     if (g_History[i] >= CV.payout) { count10X++; }
-    //         // }
-
-    //         avgStep = 180 * 3 / data2000.filter((v) => v.index <= 180 * 3 && v.bust >= 10).length;
-
-    //         if (avgStep > 10) {
-    //             message = `New round start! Dist= ${i} 10X= ${count10X} avg= ${avgStep.toFixed(2)}`;
-    //             status = true;
-    //             customBadgeClass('golden');
-    //             $('#alert_content').text(message);
-    //         }
-    //     }
-    // }
 
     if (status === true) {
         showNotification(message);
@@ -947,26 +723,25 @@ function controlComboStatus() {
 }
 
 function verifyPredictionStatus(param) {
-    if (param > 3) {
+    if (param > 3)
         return 'mega';
-    } else if (param >= 2 && param < 3) {
+    else if (param >= 2 && param < 3)
         return 'golden';
-    } else if (param >= 1.5 && param < 2) {
+    else if (param >= 1.5 && param < 2)
         return 'normal';
-    } else {
+    else
         return 'bad';
-    }
 }
 
 function showNotification(value) {
-    const notification = new Notification("BC.GAME", {
+    const notification = new Notification('BC.GAME', {
         body: value,
-        icon: "favicon.png",
+        icon: 'favicon.png',
         requireInteraction: false,
     });
 
     notification.onclick = () => {
-        chrome.tabs.create({ url: chrome.runtime.getURL("popup.html") });
+        chrome.tabs.create({ url: chrome.runtime.getURL('popup.html') });
     };
 }
 
@@ -981,13 +756,12 @@ function analysisRangeState(param1, param2, param3) {
 
     let allowedStep = 100 / avg500;
 
-    if (step500 > allowedStep) {
+    if (step500 > allowedStep)
         return true;
-    } else if (step2000 > allowedStep && step1000 > allowedStep && step500 < allowedStep) {
+    else if (step2000 > allowedStep && step1000 > allowedStep && step500 < allowedStep)
         return true;
-    } else {
+    else
         return false;
-    }
 }
 
 function analysisGameRange() {
@@ -1001,29 +775,6 @@ function analysisGameRange() {
     rangeArray.reverse().forEach((v) => showRangeAnalysis(data, v));
 }
 
-function showSequenceRed() {
-    var seq_red_count = 0;
-    var max_seq_red_count = 0;
-    var total_red_count = 0;
-
-    data.forEach(d => {
-        if (d.bust < gameRedThresold) {
-            seq_red_count++;
-        } else {
-            max_seq_red_count = Math.max(seq_red_count, max_seq_red_count);
-            total_red_count += seq_red_count;
-            seq_red_count = 0;
-        }
-    });
-
-    $('#game_max_red_sequence_count_in_table').text(max_seq_red_count);
-    $('#game_max_red_sequence_count_in_chart').text(max_seq_red_count);
-
-    var total_blue_count = data.length - total_red_count;
-    var house_edge = (total_blue_count - total_red_count) * 100 / data.length;
-    $('#game_info').text(`Total Duration: ${msToTime(duration)}, Blue: ${total_blue_count}, Red: ${total_red_count}, Sub: ${total_blue_count - total_red_count}, House Edge: ${house_edge.toFixed(2)}%`);
-}
-
 function customBadgeClass(param) {
     $('#alert_container').removeClass('bad');
     $('#alert_container').removeClass('normal');
@@ -1033,22 +784,19 @@ function customBadgeClass(param) {
 }
 
 function guessBustLevel(param) {
-    if (param < gameRedThresold) {
+    if (param < gameRedThresold)
         return 'bad';
-    } else if (param >= 10) {
+    else if (param >= 10)
         return 'good';
-    } else {
+    else
         return 'middle';
-    }
 }
 
 function compareBustPrevious(param1, param2) {
-    if (param1 < gameRedThresold && param2 < gameRedThresold) {
+    if (param1 < gameRedThresold && param2 < gameRedThresold)
         return true;
-    }
-    if (param1 >= gameRedThresold && param2 >= gameRedThresold) {
+    if (param1 >= gameRedThresold && param2 >= gameRedThresold)
         return true;
-    }
     return false;
 }
 
@@ -1056,18 +804,22 @@ $('#chart_stable_100').on('click', () => {
     $('#game_amount_input').val(100);
     $('#game_verify_submit').click();
 });
+
 $('#chart_stable_300').on('click', () => {
     $('#game_amount_input').val(300);
     $('#game_verify_submit').click();
 });
+
 $('#chart_stable_500').on('click', () => {
     $('#game_amount_input').val(500);
     $('#game_verify_submit').click();
 });
+
 $('#chart_stable_1000').on('click', () => {
     $('#game_amount_input').val(1000);
     $('#game_verify_submit').click();
 });
+
 $('#chart_stable_2000').on('click', () => {
     $('#game_amount_input').val(2000);
     $('#game_verify_submit').click();
@@ -1190,10 +942,10 @@ function* gameResults(gameHash, gameAmount) {
 }
 
 function divisible(hash, mod) {
-    var val = 0;
+    let val = 0;
 
-    var o = hash.length % 4;
-    for (var i = o > 0 ? o - 4 : 0; i < hash.length; i += 4) {
+    let o = hash.length % 4;
+    for (let i = o > 0 ? o - 4 : 0; i < hash.length; i += 4) {
         val = ((val << 16) + parseInt(hash.substring(i, i + 4), 16)) % mod;
     }
 
@@ -1201,23 +953,23 @@ function divisible(hash, mod) {
 }
 
 function hmac(key, v) {
-    var hmacHasher = CryptoJS.algo.HMAC.create(CryptoJS.algo.SHA256, key);
+    let hmacHasher = CryptoJS.algo.HMAC.create(CryptoJS.algo.SHA256, key);
     return hmacHasher.finalize(v).toString();
 }
 
 function gameResultForEthercrash(serverSeed, salt) {
-    var hash = hmac(serverSeed, salt);
+    let hash = hmac(serverSeed, salt);
 
     if (divisible(hash, 101)) return 0;
 
-    var h = parseInt(hash.slice(0, 52 / 4), 16);
-    var e = Math.pow(2, 52);
+    let h = parseInt(hash.slice(0, 52 / 4), 16);
+    let e = Math.pow(2, 52);
 
     return (Math.floor((100 * e - h) / (e - h)) / 100).toFixed(2);
 }
 
 function gameResult(seed, salt) {
-    const nBits = 52; // number of most significant bits to use
+    const nBits = 52;
 
     const hmac = CryptoJS.HmacSHA256(CryptoJS.enc.Hex.parse(seed), salt);
     seed = hmac.toString(CryptoJS.enc.Hex);
@@ -1232,9 +984,9 @@ function gameResult(seed, salt) {
     return Math.max(1, result / 100);
 }
 
-var chartMain = null;
-var chartRange300 = null;
-var chartRange500 = null;
+let chartMain = null;
+let chartRange300 = null;
+let chartRange500 = null;
 
 function drawChartMain() {
     const ctx = document.getElementById('chart_container_main');
@@ -1473,9 +1225,9 @@ function msToTime(duration) {
         hours = Math.floor((duration / (1000 * 60 * 60)) % 24),
         days = Math.floor(duration / (1000 * 60 * 60 * 24));
 
-    hours = (hours < 10) ? "0" + hours : hours;
-    minutes = (minutes < 10) ? "0" + minutes : minutes;
-    seconds = (seconds < 10) ? "0" + seconds : seconds;
+    hours = (hours < 10) ? '0' + hours : hours;
+    minutes = (minutes < 10) ? '0' + minutes : minutes;
+    seconds = (seconds < 10) ? '0' + seconds : seconds;
 
-    return (days > 0 ? days + "d " : "") + hours + "h " + minutes + "m " + seconds + "s";
+    return (days > 0 ? days + 'd ' : '') + hours + 'h ' + minutes + 'm ' + seconds + 's';
 }
