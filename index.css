@@ -8,7 +8,7 @@ body {
 
 ::-webkit-scrollbar {
     width: 4px;
-    height: 4px;
+    height: 2px;
 }
 
 ::-webkit-scrollbar-track {
@@ -247,7 +247,7 @@ button:hover {
     display: flex;
     justify-content: flex-end;
     gap: 1px;
-    margin-bottom: 4px;
+    margin-bottom: 2px;
 }
 
 .bust-item {
@@ -348,7 +348,7 @@ span#game_current_combo {
 
 .alarm-group {
     display: flex;
-    gap: 10px;
+    gap: 4px;
 }
 
 .prediction-group {
@@ -356,14 +356,17 @@ span#game_current_combo {
     justify-content: space-evenly;
     width: 100%;
     gap: 10px;
+    color: #fff;
 }
 
 .alarm-item {
     display: flex;
-    flex-direction: column;
     justify-content: center;
     align-items: center;
-    gap: 2px;
+    gap: 4px;
+    padding: 1px 4px;
+    background: #494c4f;
+    border-radius: 4px;
 }
 
 .alarm-number {
@@ -372,8 +375,8 @@ span#game_current_combo {
 }
 
 .alarm-status {
-    width: 10px;
-    height: 10px;
+    width: 8px;
+    height: 8px;
     border-radius: 50%;
 }
 

@@ -48,7 +48,7 @@
             <div class="setting-container">
                 <div class="input-container">
                     <input type="text" id="game_hash_input" placeholder="Game's hash (SHA256)"
-                        value="fcbd34149bb5c22086061366f7635c1856d128b09b3a49dae30b46a1ad15d8a8" />
+                        value="" />
                     <!-- <input type="text" id="game_salt_input" placeholder="Salt"
                         value="0000000000000000000301e2801a9a9598bfb114e574a91a887f2132f33047e6" disabled /> -->
                     <!-- <input class="input" type="text" id="game_salt_input" placeholder="Salt"
@@ -67,11 +67,11 @@
             </div>
             <div class="dashboard-container">
                 <div><span id="game_current_combo">0</span></div>
-                <div style="display: flex; flex-direction: column; align-items: center; gap: 5px;">
-                    <div id="game_average" style="display: flex;"></div>
+                <div id="game_average" style="display: flex;"></div>
+                <!-- <div style="display: flex; flex-direction: column; align-items: center; gap: 5px;">
                     <div style="height: 1px; background: #5d5d5d; width: 100%;"></div>
                     <div id="game_range_status" style="display: flex;"></div>
-                </div>
+                </div> -->
             </div>
             <div class="alarm-container">
                 <div class="alarm-group" id="alarm_container"></div>
@@ -88,7 +88,7 @@
         <div id="tabs-content">
             <div>
                 <div class="dot-container">
-                    <div class="v-100 h-100" style="overflow: auto;">
+                    <div class="v-100 h-100" style="overflow: auto; margin-bottom: 5px;">
                         <div class="bust-list"></div>
                     </div>
                     <div class="v-100 h-100"
